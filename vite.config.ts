@@ -2,9 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// Set base to '/fitquest/' for GitHub Pages (repo name must match)
+// Set base to '/Fitquest/' for GitHub Pages (repo name must match)
 // Change 'fitquest' below if your GitHub repo has a different name
-const base = process.env.GITHUB_ACTIONS ? '/fitquest/' : '/';
+const base = process.env.GITHUB_ACTIONS ? '/Fitquest/' : '/';
 
 export default defineConfig({
   base,
