@@ -1,4 +1,4 @@
-import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router'
+import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet, createHashHistory } from '@tanstack/react-router'
 import { useAuth } from './hooks/useAuth'
 import { SharedAppLayout } from './layouts/shared-app-layout'
 import Login from './pages/Login'
@@ -9,7 +9,6 @@ import Community from './pages/Community'
 import Leaderboard from './pages/Leaderboard'
 import Profile from './pages/Profile'
 
-// Root Route
 const rootRoute = createRootRoute({
   component: () => (
     <div className="flex w-full flex-1 flex-col min-h-0">
@@ -18,10 +17,8 @@ const rootRoute = createRootRoute({
   ),
 })
 
-// Auth Guard Layout
 function AuthenticatedLayout() {
   const { user, isLoading } = useAuth()
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
@@ -29,11 +26,7 @@ function AuthenticatedLayout() {
       </div>
     )
   }
-
-  if (!user) {
-    return <Login />
-  }
-
+  if (!user) return <Login />
   return (
     <SharedAppLayout appName="FitQuest">
       <Outlet />
@@ -41,69 +34,17 @@ function AuthenticatedLayout() {
   )
 }
 
-const authRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  id: 'auth',
-  component: AuthenticatedLayout,
-})
+const authRoute = createRoute({ getParentRoute: () => rootRoute, id: 'auth', component: AuthenticatedLayout })
+const indexRoute = createRoute({ getParentRoute: () => authRoute, path: '/', component: Dashboard })
+const workoutsRoute = createRoute({ getParentRoute: () => authRoute, path: '/workouts', component: Workouts })
+const runRoute = createRoute({ getParentRoute: () => authRoute, path: '/run', component: RunTracker })
+const communityRoute = createRoute({ getParentRoute: () => authRoute, path: '/community', component: Community })
+const leaderboardRoute = createRoute({ getParentRoute: () => authRoute, path: '/leaderboard', component: Leaderboard })
+const profileRoute = createRoute({ getParentRoute: () => authRoute, path: '/profile', component: Profile })
 
-// Child Routes
-const indexRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/',
-  component: Dashboard,
-})
+const routeTree = rootRoute.addChildren([authRoute.addChildren([indexRoute, workoutsRoute, runRoute, communityRoute, leaderboardRoute, profileRoute])])
+const router = createRouter({ routeTree, history: createHashHistory() })
 
-const workoutsRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/workouts',
-  component: Workouts,
-})
+declare module '@tanstack/react-router' { interface Register { router: typeof router } }
 
-const runRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/run',
-  component: RunTracker,
-})
-
-const communityRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/community',
-  component: Community,
-})
-
-const leaderboardRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/leaderboard',
-  component: Leaderboard,
-})
-
-const profileRoute = createRoute({
-  getParentRoute: () => authRoute,
-  path: '/profile',
-  component: Profile,
-})
-
-// Router Setup
-const routeTree = rootRoute.addChildren([
-  authRoute.addChildren([
-    indexRoute,
-    workoutsRoute,
-    runRoute,
-    communityRoute,
-    leaderboardRoute,
-    profileRoute,
-  ]),
-])
-
-const router = createRouter({ routeTree })
-
-declare module '@tanstack/react-router' {
-  interface Register {
-    router: typeof router
-  }
-}
-
-export default function App() {
-  return <RouterProvider router={router} />
-}
+export default function App() { return <RouterProvider router={router} /> }
